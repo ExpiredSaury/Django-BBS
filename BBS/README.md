@@ -246,11 +246,22 @@ class Comment(models.Model):
     parent = models.ForeignKey(to='self', on_delete=models.CASCADE, null=True)  # 有些评论就是根评论
 ```
 
+项目根目录创建avatar文件，**注意：**这只是前期需要，后期会使用别的
+
+![image-20230107091223252](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/image-20230107091223252.png)
+
 settings.py中配置
 
 ```python
-#继承了AbstractUser就得在配置文件中设置此
+#继承了AbstractUser就得在配置文件中设置此代码
 AUTH_USER_MODEL = 'app01.UserInfo'
+```
+
+执行数据迁移命令
+
+```python
+python manage.py makemigrations
+python manage.py migrate
 ```
 
 
@@ -307,12 +318,13 @@ myforms文件夹
 """
 ```
 
-**forms组件**
+#### **forms组件**
 
 ```python
 # 书写针对用户表的forms组件|代码
+# app01文件夹下的myforms.py
 from django import forms
-from App import models
+from app01 import models
 
 
 class MyRegForm(forms.Form):
@@ -324,8 +336,8 @@ class MyRegForm(forms.Form):
                                    'max_length': '用户名最大8位',
                                    'required': '用户不能为空',
                                },
-                               widget=forms.widgets.TextInput(attrs={'class': 'form_control'})
-                               )
+                               #还需要标签具有bootstrap样式
+                               widget=forms.widgets.TextInput(attrs={'class': 'form-control'})                               )
     password = forms.CharField(label='密码',
                                max_length=8,
                                min_length=3,
@@ -334,8 +346,7 @@ class MyRegForm(forms.Form):
                                    'max_length': '密码最大8位',
                                    'required': '密码不能为空',
                                },
-                               widget=forms.widgets.PasswordInput(attrs={'class': 'form_control'})
-                               )
+                               widget=forms.widgets.PasswordInput(attrs={'class': 'form-control'})                               )
     confirm_password = forms.CharField(label='确认密码',
                                        max_length=8,
                                        min_length=3,
@@ -344,14 +355,14 @@ class MyRegForm(forms.Form):
                                            'max_length': '确认密码最大8位',
                                            'required': '确认密码不能为空',
                                        },
-                                       widget=forms.widgets.PasswordInput(attrs={'class': 'form_control'})
+                                       widget=forms.widgets.PasswordInput(attrs={'class': 'form-control'})
                                        )
     email = forms.EmailField(label='邮箱',
                              error_messages={
                                  'required': '用户不能为空',
                                  'invalid': '邮箱格式不正确',
                              },
-                             widget=forms.widgets.EmailInput(attrs={'class': 'from-control'})
+                             widget=forms.widgets.EmailInput(attrs={'class': 'form-control'})
                              )
 
     # 钩子函数
@@ -373,9 +384,37 @@ class MyRegForm(forms.Form):
             self.add_error('confirm_password', '两次密码不一致')
 
         return self.cleaned_data
+
 ```
 
-**前端**
+静态资源配置
+
+```python
+STATIC_URL = '/static/'
+STATICFILES_DIRS=[
+    BASE_DIR / 'static'
+]
+```
+
+![image-20230107093759892](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/image-20230107093759892.png)
+
+静态资源引入
+
+```html
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="{% static 'js/jQuery-3.6.0-min.js' %}"></script>
+    <link href="{% static 'bootstrap-3.4.1-dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <script src="{% static 'bootstrap-3.4.1-dist/js/bootstrap.min.js' %}"></script>
+</head>
+```
+
+
+
+#### **前端**
 
 ```html
 <!--register.html---->
@@ -388,11 +427,11 @@ class MyRegForm(forms.Form):
             <form id="myform">  <!-----这里不用form表单提交数据，只是单纯的用已给form标签而已--->
                 {% csrf_token %}
                 {% for form in form_obj %}
-                    <dvi class="form-group">
+                    <div class="form-group">
                         <label for="{{ form.auto_id }}">{{ form.label }}</label>
                         {{ form }}
                         <span style="color: red" class="pull-right">{{ form.errors.0 }}</span>
-                    </dvi>
+                    </div>
                 {% endfor %}
 
                 <div class="form-group">
@@ -471,13 +510,26 @@ class MyRegForm(forms.Form):
 </body>
 ```
 
-**后端**
+#### **后端**
 
 ```python
 #urls.py
-path('register/', views.register, name='register'),
+from app01 import views
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('register/',views.register,name='register')
+]
+```
 
+
+
+```python
 #views.py
+from django.http import JsonResponse
+from django.shortcuts import render
+from app01.myforms import MyRegForm
+from app01 import models
+
 def register(request):
     # 生成一个空对象
     form_obj = MyRegForm()
@@ -536,7 +588,7 @@ img标签的src属性
 """
 ```
 
-**前端**
+#### **前端**
 
 ```html
 {% load static %}
@@ -616,7 +668,7 @@ img标签的src属性
 </html>
 ```
 
-**后端**
+#### **后端**
 
 ```python
 #urls.py
