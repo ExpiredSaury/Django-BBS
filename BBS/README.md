@@ -759,7 +759,7 @@ def get_code(request):
     code = ''
     for i in range(5):
         random_upper = chr(random.randint(65, 90))  # chr 把数字转成对应的ascii对应的字符
-        random_lower = chr(random.randint(97, 120))
+        random_lower = chr(random.randint(97, 122))
         random_int = str(random.randint(0, 9))
         # 从上面三个里随机选一个
         tmp = random.choice([random_lower, random_int, random_upper])
@@ -780,16 +780,73 @@ def get_code(request):
 
 ### 6、搭建BBS首页
 
+#### 导航条搭建
+
+```html
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">BBS</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">BBS</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">博客 <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">文章</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">更多 <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
+      </ul>
+      <form class="navbar-form navbar-left">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+```
+
+
+
 **动态展示用户名称**
 
 导航条根据用户是否登录展示不同的内容
 
-```python
-当用户登录之后显示用户名和更多操作
-当用户没有登录显示注册和登录
-```
+>当用户登录之后显示用户名和更多操作，当用户没有登录显示注册和登录
 
-
+![image-20230111142029706](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/image-20230111142029706.png)
 
 ```html
 {% if request.user.is_authenticated %}
@@ -813,76 +870,101 @@ def get_code(request):
 
 ##### **修改密码**
 
-```html
- <li><a href="#" data-toggle="modal" data-target=".bs-example-modal-lg">修改密码</a></li>
+> 只有登录的用户才能修改密码
 
-{#修改密码弹出框#}
-<div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog"
-     aria-labelledby="myLargeModalLabel">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <h1 class="text-center">修改密码</h1>
-            <div class="row">
-                <div class="col-md-offset-2 col-md-8">
-                    <div class="form-group">
-                        <label for="">用户名</label>
-                        <input type="text" disabled value="{{ request.user.username }}"
-                               class="form-control">
+```html
+<!--home.html-->
+<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+       aria-expanded="false">更多 <span class="caret"></span></a>
+    <ul class="dropdown-menu">
+        <li><a href="#" data-toggle="modal"
+               data-target=".bs-example-modal-lg">修改密码</a></li>
+        <li><a href="#">修改头像</a></li>
+        <li><a href="#">后台管理</a></li>
+        <li role="separator" class="divider"></li>
+        <li><a href="#">退出登录</a></li>
+    </ul>
+    <!-- 弹出框 -->
+    <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog"
+         aria-labelledby="myLargeModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <h1 class="text-center">修改密码</h1>
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2">
+                        <div class="form-group">
+                            <label for="">用户名</label>
+                            <input type="text" class="form-control" disabled
+                                   value="{{ request.user.username }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="">原密码</label>
+                            <input type="text" class="form-control" id="id_old_password">
+                        </div>
+                        <div class="form-group">
+                            <label for="">新密码</label>
+                            <input type="text" class="form-control" id="id_new_password">
+                        </div>
+                        <div class="form-group">
+                            <label for="">确认密码</label>
+                            <input type="text" class="form-control" id="id_confirm_password">
+                        </div>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                        <button class="btn btn-primary" id="id_edit">修改</button>
+                        <span style="color: red" id="id_error"></span>
+                        <br>
+                        <br>
+
                     </div>
-                    <div class="form-group">
-                        <label for="">原密码</label>
-                        <input type="password" id="id_old_pwd" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="">新密码</label>
-                        <input type="password" id="id_new_pwd" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="">确认密码</label>
-                        <input type="password" id="id_confirm_pwd" class="form-control">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="id_edit" class="btn btn-default"
-                                data-dismiss="modal">
-                            取消
-                        </button>
-                        <button type="button" class="btn btn-primary">保存</button>
-                        <span style="color: red" id="pwd_error"></span>
-                    </div>
-                    <br>
-                    <br>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</li>
 
 
 
-  $('#id_edit').on('click', function () {
+<script>
+    $('#id_edit').click(function () {
         $.ajax({
-            url: '/set_pwd/',
+            url: '/set_password/',
             type: 'post',
             data: {
-                'old_pwd': $('#id_old_pwd').val(),
-                'new_pwd': $('#id_new_pwd').val(),
-                'confirm_pwd': $('#id_confirm_pwd').val(),
+                'old_password': $('#id_old_password').val(),
+                'new_password': $('#id_new_password').val(),
+                'confirm_password': $('#id_confirm_password').val(),
                 'csrfmiddlewaretoken': '{{ csrf_token }}'
             },
             success: function (args) {
                 if (args.code == 1000) {
-                    {#window.location.href='/login/'#}
-                    window.location.reload() //修改成功后页面刷新
-                } else {
-                    $('#pwd_error').text(args.msg)
+                    {#刷新页面#}
+                    window.location.reload()
+                }else{
+                    $('#id_error').text(args.msg)
 
                 }
             }
         })
     })
+</script>
 ```
 
+全局配置装饰器
+
 ```python
+#settings.py
+LOGIN_URL = '/login/'
+```
+
+
+
+```python
+#urls.py
+# 修改密码
+path('set_password/', views.set_password, name='set_password'),
+
+#views.py
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -906,37 +988,120 @@ def set_pwd(request):
                 back_dic['code'] = 1002
                 back_dic['msg'] = '原密码错误'
         return JsonResponse(back_dic)
-
-    return HttpResponse('OK')
 ```
 
 ##### **退出登录**
 
 ```python
+# home.html
 <li><a href="{% url 'logout' %}">退出登录</a></li>
 
 
-#urls.py
+# urls.py
 path('logout/',views.logout,name='logout')
-#views.py
+# views.py
+
+from django.shortcuts import redirect
+from django.contrib import auth
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def logout(request):
     auth.logout(request)
     return redirect('home')
 ```
 
-##### **admin后台管理**
+#### 首页搭建
+
+##### 首页282布局
+
+```html
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2">
+            {#面板#}
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">重金求子</h3>
+                </div>
+                <div class="panel-body">
+                    事成之后，上海别墅一套，外加现金500w
+                </div>
+            </div>
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">千万大奖</h3>
+                </div>
+                <div class="panel-body">
+                    抓紧联系：12345761313
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">线上赌场</h3>
+                </div>
+                <div class="panel-body">
+                    性感荷官在线发牌，还在等什么？？？
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            
+			<!--文章数据展示区域-->
+            <!--文章数据展示区域-->
+            <!--文章数据展示区域-->
+            
+        </div>
+        
+        <div class="col-md-2">
+            {#面板#}
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">重金求子</h3>
+                </div>
+                <div class="panel-body">
+                    事成之后，上海别墅一套，外加现金500w
+                </div>
+            </div>
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">千万大奖</h3>
+                </div>
+                <div class="panel-body">
+                    抓紧联系：12345761313
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">线上赌场</h3>
+                </div>
+                <div class="panel-body">
+                    性感荷官在线发牌，还在等什么？？？
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+##### **admin后台管理添加数据**
 
 ```python
 """django提供了一个可视化的界面，方便对模型表进行增删改查操作
+"""
+```
 
+先创建超级用户，然后登录，登陆后发现没有其他表，**如下图**：
+
+![image-20230111153930811](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/image-20230111153930811.png)
+
+```python
+"""
 如果想要使用admin后台管理，需要先注册模型表
 告诉admin需要操作哪些表
 去应用下的admin.py种注册你的模型表
 """
-```
-
-```python
 #注册模型表
 from django.contrib import admin
 from App import models
@@ -955,22 +1120,22 @@ admin.site.register(models.Comment)
 ```python
 #admin会给每一个注册了的模型表自动生成增删改查四条url
 拿用户表为例:
-http://127.0.0.1:8000/admin/App/userinfo/   查
-http://127.0.0.1:8000/admin/App/userinfo/add/     增
-http://127.0.0.1:8000/admin/App/userinfo/1/change/    改
-http://127.0.0.1:8000/admin/App/userinfo/1/delete/    删
+http://127.0.0.1:8000/admin/app01/userinfo/   查
+http://127.0.0.1:8000/admin/app01/userinfo/add/     增
+http://127.0.0.1:8000/admin/app01/userinfo/1/change/    改
+http://127.0.0.1:8000/admin/app01/userinfo/1/delete/    删
 
-个人站点表
-http://127.0.0.1:8000/admin/App/blog/   查
-http://127.0.0.1:8000/admin/App/blog/add/     增
-http://127.0.0.1:8000/admin/App/blog/1/change/    改
-http://127.0.0.1:8000/admin/App/blog/1/delete/    删
+个人站点表为例
+http://127.0.0.1:8000/admin/app01/blog/   查
+http://127.0.0.1:8000/admin/app01/blog/add/     增
+http://127.0.0.1:8000/admin/app01/blog/1/change/    改
+http://127.0.0.1:8000/admin/app01/blog/1/delete/    删
 
 """
 关键点就在于urls.py中自带的第一条url
 	path('admin/', admin.site.urls),
 
-前期需要自己手动苦逼的录入数据
+前期需要自己手动录入数据
 """
 
 #1.数据绑定尤其要注意用户和个人站点不要忘记绑定
@@ -998,7 +1163,137 @@ class Meta:
 
 ![image-20221120211305579](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/20221212121805-2.png)
 
-**admin路由分发的本质**
+添加站点的时候发现不好识别，如下图：可以在models.py中加`__str__`方法
+
+![image-20230111155803912](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/image-20230111155803912.png)
+
+```python
+# models.py
+from django.db import models
+
+# Create your models here.
+from django.contrib.auth.models import AbstractUser
+
+
+class UserInfo(AbstractUser):
+    phone = models.BigIntegerField(null=True, verbose_name='手机号')
+    # 头像
+    avatar = models.FileField(upload_to='avatar/', default='avatar/default.jpg', verbose_name='用户头像')
+    """给avatar字段传文件对象，该文件会自动存储到avatar文件下，然后avatar字段只保存文件路径avatar/default.jpg"""
+    create_time = models.DateField(auto_now_add=True)
+
+    """外键字段"""
+    blog = models.OneToOneField(to='Blog', null=True, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = '用户表'  # 用来修改admin后台管理默认的表名
+
+    def __str__(self):
+        return self.username
+    
+class Blog(models.Model):
+    site_name = models.CharField(max_length=32, verbose_name='站点名称')
+    site_title = models.CharField(max_length=32, verbose_name='站点标题')
+    site_theme = models.CharField(max_length=64, verbose_name='站点样式')  # 存css/js文件路径
+
+    class Meta:
+        verbose_name_plural = '个人站点表'
+
+    def __str__(self):
+        return self.site_name
+# 文章分类
+class Category(models.Model):
+    name = models.CharField(max_length=32, verbose_name='文章分类')
+    """外键字段"""
+    blog = models.ForeignKey(to='Blog', null=True, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = '文章分类'
+
+    def __str__(self):
+        return self.name
+    
+class Tag(models.Model):
+    name = models.CharField(max_length=32, verbose_name='文章标签')
+    """外键字段"""
+    blog = models.ForeignKey(to='Blog', null=True, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = '文章标签'
+
+    def __str__(self):
+        return self.name
+    
+class Article(models.Model):
+    title = models.CharField(max_length=64, verbose_name='文章标题')
+    desc = models.CharField(max_length=255, verbose_name='文章简介')
+    # 文章内容很多，一般都使用TextField
+    content = models.TextField(verbose_name='文章内容')
+    create_time = models.DateField(auto_now_add=True)
+    # 数据库字段设计优化
+    up_num = models.BigIntegerField(default=0, verbose_name='文章点赞数')
+    down_num = models.BigIntegerField(default=0, verbose_name='文章点踩数')
+    comment_num = models.BigIntegerField(default=0, verbose_name='文章评论数')
+    """外键字段"""
+    blog = models.ForeignKey(to='Blog', null=True, on_delete=models.CASCADE)
+    category = models.ForeignKey(to='Category', null=True, on_delete=models.CASCADE)
+    tags = models.ManyToManyField(to='Tag',
+                                  through='ArticleToTag',
+                                  through_fields=('article', 'tag'))
+
+    def __str__(self):
+        return self.title
+    class Meta:
+        verbose_name_plural = '文章表'
+
+
+# 文章表和标签表的第三张关系表
+class ArticleToTag(models.Model):
+    article = models.ForeignKey(to='Article', on_delete=models.CASCADE)
+    tag = models.ForeignKey(to='Tag', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = '文章和标签的第三张关系表'
+
+
+class UpAndDown(models.Model):
+    user = models.ForeignKey(to='UserInfo', on_delete=models.CASCADE)
+    article = models.ForeignKey(to='Article', on_delete=models.CASCADE)
+    is_up = models.BooleanField()  # 布尔值，存0/1
+
+    class Meta:
+        verbose_name_plural = '点赞点踩'
+
+
+class Comment(models.Model):
+    user = models.ForeignKey(to='UserInfo', on_delete=models.CASCADE)
+    article = models.ForeignKey(to='Article', on_delete=models.CASCADE)
+    content = models.CharField(max_length=255, verbose_name='评论内容')
+    comment_time = models.DateTimeField(auto_now_add=True, verbose_name='评论时间')
+    # 自关联
+    parent = models.ForeignKey(to='self', on_delete=models.CASCADE, null=True)  # 有些评论就是根评论
+
+    class Meta:
+        verbose_name_plural = '评论'
+
+```
+
+在用admin后台管理添加用户信息点击save的时候，会出现报错信息
+
+![image-20230111161003462](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/image-20230111161003462.png)
+
+，
+
+> 注意：null=True是告诉数据库可以为空，但是admin后台管理不允许为空，如果想要它为空，需要再加上blank=True
+
+```python
+class UserInfo(AbstractUser):
+    phone = models.BigIntegerField(null=True, verbose_name='手机号',blank=True)
+```
+
+
+
+**扩展：admin路由分发的本质**
 
 ```python
 # 路由分发的本质 include   可以无限制的嵌套n多层 path('index/',([],None,None))
@@ -1020,6 +1315,50 @@ def index(request):
 ```
 
 ![image-20221121144353582](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/20221212121805-3.png)
+
+##### 首页数据展示
+
+```python
+<div class="col-md-8">
+            <!--文章数据展示区域-->
+            <ul class="media-list">
+                {% for article_obj in article_queryset %}
+                    <li class="media">
+                        <h4 class="media-heading"><a href="">{{ article_obj.title }}</a></h4>
+                        <div class="media-left">
+                            <a href="#">
+                                <img class="media-object" src="{% static 'imgs/default.png' %}" alt="..." width='50px'>
+                            </a>
+                        </div>
+                        <div class="media-body">
+                            {{ article_obj.desc }}
+                        </div>
+                        <br>
+                    <div>
+                        <span><a href="#">{{ article_obj.blog.userinfo.username }}&nbsp;&nbsp;</a></span>
+                        <span>发布于&nbsp;&nbsp;</span>
+                        <span>{{ article_obj.create_time|date:'Y-m-d' }}&nbsp;&nbsp;</span>
+                        <span><span class="glyphicon glyphicon-comment"></span>评论({{ article_obj.comment_num }})&nbsp;&nbsp;</span>
+                        <span><span class="glyphicon glyphicon-thumbs-up"></span>点赞({{ article_obj.up_num }})</span>
+                    </div>
+                    </li>
+                    <hr>
+                {% endfor %}
+
+            </ul>
+ </div>
+```
+
+```python
+# 首页
+#urls.py
+path('home/', views.home, name='home'),
+#views.py
+def home(request):
+    # 查询本网站所有的文章数据展示的前端页面，这里可以使用分页器做分页，
+    aritcle_queryset = models.Article.objects.all()
+    return render(request, 'home.html', locals())
+```
 
 ##### **media配置及用户头像展示**
 
@@ -1057,11 +1396,10 @@ re_path(r'media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT})
 **头像展示**
 
 ```html
-<img class="media-object" src="/media/{{ article_obj.blog.userinfo.avatar }}" alt="..."
-                                     width="60">
+<img class="media-object" src="/media/{{article_obj.blog.userinfo.avatar }}" alt="..." width='50px'>
 ```
 
-**图片防盗链**
+##### **图片防盗链**
 
 ```python
 #如何避免别的网站直接通过本网站的url访问本网站的资源
@@ -1076,52 +1414,252 @@ re_path(r'media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT})
     2.直接写爬虫把对方网站的所有资源下载到我们自己的服务器上
 ```
 
-##### 首页
+
+
+### 7、个人站点页面搭建
+
+#### 404页面
+
+> 根据用户名进入个人站点，用户名不存在则返回404页面
 
 ```python
-<div class="col-md-8">
-    <ul class="media-list">
-        {% for article_obj in aritcle_queryset %}
-            <li class="media">
-                <h4 class="media-heading"><a href="#">{{ article_obj.title }}</a></h4>
-                <div class="media-left">
-                    <a href="#">
-                        <img class="media-object" src="/media/{{ article_obj.blog.userinfo.avatar }}" alt="..."
-                             width="60">
-                    </a>
-                </div>
-                <div class="media-body">
-                    {{ article_obj.desc }}
-                </div>
-                <br>
-                <div>
-                    <span><a href="/{{ article_obj.blog.userinfo.username }}/">{{ article_obj.blog.userinfo.username }}&nbsp;&nbsp;</a></span>
-                    <span>发布于&nbsp;&nbsp;</span>
-                    <span>{{ article_obj.create_time|date:'Y-m-d' }}&nbsp;&nbsp;</span>
-                    <span><span
-                            class="glyphicon glyphicon-comment"></span>评论({{ article_obj.comment_num }})&nbsp;&nbsp;</span>
-                    <span><span
-                            class="glyphicon glyphicon-thumbs-up"></span>点赞({{ article_obj.up_num }})&nbsp;&nbsp;</span>
-                </div>
-            </li>
-            <hr>
-        {% endfor %}
+# 个人站点页面搭建
+#urls.py
+re_path(r'^(?P<username>\w+)/$',views.site,name='site')
 
-    </ul>
+#views.py
+
+def site(request,username):
+    # 校验当前用户名是否存在
+    user_obj=models.UserInfo.objects.filter(username=username).first()
+    #用户不存在返回404页面
+    if not user_obj:
+        return  render(request,'error.html')
+
+```
+
+```html
+<!--error.html--->
+<html>
+<head>
+    <meta charset='utf-8'>
+
+    <title>404 页面不存在 - 博客园</title>
+    <style type='text/css'>
+        body {
+            margin: 8% auto 0;
+            max-width: 400px;
+            min-height: 200px;
+            padding: 10px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+            font-size: 14px;
+            padding-right: 200px;
+            position: relative;
+        }
+
+        p {
+            color: #555;
+            margin: 15px 0px;
+        }
+
+        img {
+            border: 0px;
+        }
+
+        .d {
+            color: #404040;
+        }
+
+    </style>
+</head>
+<body>
+<a href="/home/"> <img src='//common.cnblogs.com/images/logo_small.gif' alt=""></a>
+<p><b>404.</b>抱歉，您访问的资源不存在</p>
+<p class="d">请确认您输入的网址是否争取，如果问题持续存在，请发邮件 contact&#64;python666.com 与我们联系。</p>
+<p><a href="/home/">返回网站首页</a></p>
+</body>
+</html>
+```
+
+在home.html中配置跳转的url
+
+```html
+ <span><a href="/{{ article_obj.blog.userinfo.username  }}/">{{ article_obj.blog.userinfo.username }}&nbsp;&nbsp;</a></span>
+```
+
+
+
+#### 导航条搭建
+
+```html
+<!--site.html--->
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">BBS</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">{{ blog.site_title }}</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">博客 <span class="sr-only">(current)</span></a></li>
+                <li><a href="#">文章</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">更多 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">One more separated link</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <form class="navbar-form navbar-left">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                {% if request.user.is_authenticated %}
+                    <li><a href="#">{{ request.user.username }}</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">更多 <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" data-toggle="modal"
+                                   data-target=".bs-example-modal-lg">修改密码</a></li>
+                            <li><a href="#">修改头像</a></li>
+                            <li><a href="#">后台管理</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="{% url 'logout' %}">退出登录</a></li>
+                        </ul>
+                        <!-- 弹出框 -->
+                        <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog"
+                             aria-labelledby="myLargeModalLabel">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <h1 class="text-center">修改密码</h1>
+                                    <div class="row">
+                                        <div class="col-md-8 col-md-offset-2">
+                                            <div class="form-group">
+                                                <label for="">用户名</label>
+                                                <input type="text" class="form-control" disabled
+                                                       value="{{ request.user.username }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="">原密码</label>
+                                                <input type="text" class="form-control" id="id_old_password">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="">新密码</label>
+                                                <input type="text" class="form-control" id="id_new_password">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="">确认密码</label>
+                                                <input type="text" class="form-control" id="id_confirm_password">
+                                            </div>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">取消
+                                            </button>
+                                            <button class="btn btn-primary" id="id_edit">修改</button>
+                                            <span style="color: red" id="id_error"></span>
+                                            <br>
+                                            <br>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'register' %}">注册</a></li>
+                    <li><a href="{% url 'login' %}">登录</a></li>
+                {% endif %}
+
+
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+```
+
+#### 个人站点39布局
+
+##### 文章展示区域
+
+```html
+<!--site.html--->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+           
+                {# 侧边栏区域#}
+            
+        </div>
+        <div class="col-md-9">
+                  <!--文章数据展示区域-->
+            <ul class="media-list">
+                {% for article_obj in article_list %}
+                    <li class="media">
+                        <h4 class="media-heading"><a href="">{{ article_obj.title }}</a></h4>
+                        <div class="media-left">
+                            <a href="#">
+                                <img class="media-object" src="/media/{{ article_obj.blog.userinfo.avatar }}" alt="..." width='50px'>
+                            </a>
+                        </div>
+                        <div class="media-body">
+                            {{ article_obj.desc }}
+                        </div>
+
+                    <div class="pull-right">
+                        <span>posted&nbsp;&nbsp;</span>
+                        <span>@&nbsp;&nbsp;</span>
+                        <span>{{ article_obj.create_time|date:'Y-m-d' }}&nbsp;&nbsp;</span>
+                        <span>{{ article_obj.blog.userinfo.username }}&nbsp;&nbsp;</span>
+                        <span><span class="glyphicon glyphicon-comment"></span>评论({{ article_obj.comment_num }})&nbsp;&nbsp;</span>
+                        <span><span class="glyphicon glyphicon-thumbs-up"></span>点赞({{ article_obj.up_num }})</span>
+                        <span><a href="#">编辑</a></span>
+                    </div>
+                    </li>
+                    <hr>
+                {% endfor %}
+
+            </ul>
+        </div>
+    </div>
 </div>
 ```
 
-```python
-# 首页
-path('home/', views.home, name='home'),
 
-def home(request):
-    # 查询本网站所有的文章数据展示的前端页面，这里可以使用分页器做分页，
-    aritcle_queryset = models.Article.objects.all()
-    return render(request, 'home.html', locals())
+
+```python
+# 个人站点页面搭建
+def site(request, username):
+    # 校验当前用户名是否存在
+    user_obj = models.UserInfo.objects.filter(username=username).first()
+    # 用户不存在返回404页面
+    if not user_obj:
+        return render(request, 'error.html')
+    blog = user_obj.blog
+    # 查询当前个人站点下的所有文章
+    article_list=models.Article.objects.filter(blog=blog)
+    return render(request,'site.html',locals())
 ```
 
-##### 个人站点
+##### 侧边栏展示区域
 
 ```python
 #诠释每个用户都可以有自己的站点样式
@@ -1138,7 +1676,79 @@ date_list = models.Article.objects.filter(blog=blog).annotate(month=TruncMonth('
 TIME_ZONE = 'Asia/Shanghai'
 USE_TZ = False
 
+```
 
+```html
+   <div class="col-md-3">
+
+            {# 侧边栏区域#}
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文章分类</h3>
+                </div>
+                <div class="panel-body">
+                    {% for category in category_list %}
+                    <p><a href="">{{ category.0 }}({{ category.1 }})</a></p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文章标签</h3>
+                </div>
+                <div class="panel-body">
+                    {% for tag in tag_list %}
+                    <p><a href="">{{ tag.0 }}({{ tag.1 }})</a></p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">日期归档</h3>
+                </div>
+                <div class="panel-body">
+    {% for date in date_list %}
+    <p><a href="">{{ date.0|date:'Y年m月' }}({{ date.1 }})</a></p>
+    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+```
+
+```python
+# 个人站点页面搭建
+def site(request, username):
+    # 校验当前用户名是否存在
+    user_obj = models.UserInfo.objects.filter(username=username).first()
+    # 用户不存在返回404页面
+    if not user_obj:
+        return render(request, 'error.html')
+    blog = user_obj.blog
+    # 查询当前个人站点下的所有文章
+    article_list = models.Article.objects.filter(blog=blog)
+
+    # 1.查询当前用户所有的分类及分类下的文章个数
+    category_list = models.Category.objects.filter(blog=blog).annotate(count_num=Count('article__pk')).values_list(
+        'name',
+        'count_num')
+    # 2.查询当前所有用户的标签及标签下的标签数
+    tag_list=models.Tag.objects.filter(blog=blog).annotate(count_num=Count('article__pk')).values_list(
+        'name',
+        'count_num')
+    # 3.按照年月统计所有的文章
+    date_list = models.Article.objects.filter(blog=blog).annotate(month=TruncMonth('create_time')).values(
+        'month').annotate(count_number=Count('pk')).values_list('month', 'count_number')
+    return render(request, 'site.html', locals())
+
+```
+
+
+
+##### **侧边栏筛选功能**
+
+```python
 侧边栏筛选功能
 	1.多个url公用一个视图函数
     2.当多个url公用一个视图函数的时候，应该思考能否优化
@@ -1149,7 +1759,7 @@ USE_TZ = False
     re_path(r'^(?P<username>\w+)/(?P<condition>category|tag|archive)/(?P<param>.*)/', views.site)
 ```
 
-**侧边栏筛选功能**
+
 
 ```html
 <div class="container-fluid">
@@ -1278,7 +1888,9 @@ def site(request, username, **kwargs):
 
 ```
 
-#### 7、文章详情页
+### 8、文章详情页
+
+> 导航条，侧边栏不变，只有右侧区域在变化
 
 ```python
 #url设计
@@ -1286,8 +1898,100 @@ def site(request, username, **kwargs):
 
 #先验证url是否会被顶替
 
-#文章详情页和个人站点基本一致
+#文章详情页和个人站点基本一致，所以用模板的继承
+创建一个base.html,复制site.html的代码，在  <div class="col-md-9">这里划分区域，
+     <div class="col-md-9">
+            <!--文章数据展示区域-->
+            {% block content %}
+              
+            {% endblock %}
+        </div>
+ 然后把site.html中 的代码删除，直接继承
 
+
+
+#site.html
+{% extends 'base.html' %}
+
+{% block content %}
+    <ul class="media-list">
+        {% for article_obj in article_list %}
+            <li class="media">
+                <h4 class="media-heading"><a href="">{{ article_obj.title }}</a></h4>
+                <div class="media-left">
+                    <a href="#">
+                        <img class="media-object" src="/media/{{ article_obj.blog.userinfo.avatar }}" alt="..."
+                             width='50px'>
+                    </a>
+                </div>
+                <div class="media-body">
+                    {{ article_obj.desc }}
+                </div>
+
+                <div class="pull-right">
+                    <span>posted&nbsp;&nbsp;</span>
+                    <span>@&nbsp;&nbsp;</span>
+                    <span>{{ article_obj.create_time|date:'Y-m-d' }}&nbsp;&nbsp;</span>
+                    <span>{{ article_obj.blog.userinfo.username }}&nbsp;&nbsp;</span>
+                    <span><span class="glyphicon glyphicon-comment"></span>评论({{ article_obj.comment_num }})&nbsp;&nbsp;</span>
+                    <span><span
+                            class="glyphicon glyphicon-thumbs-up"></span>点赞({{ article_obj.up_num }})</span>
+                    <span><a href="#">编辑</a></span>
+                </div>
+            </li>
+            <hr>
+        {% endfor %}
+
+    </ul>
+{% endblock %}
+
+```
+
+**给文章标题配置url,让其能够跳转**
+
+```html
+<!---site.html--->
+<h4 class="media-heading"><a href="/{{ username }}/article/{{ article_obj.pk }}/">{{ article_obj.title }}</a></h4>
+
+<!--home.html--->
+<h4 class="media-heading"><a href="/{{ article_obj.blog.userinfo.username }}/article/{{ article_obj.pk }}/">{{ article_obj.title }}</a></h4>
+
+```
+
+**article_detail.html**
+
+前端
+
+```html
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ article_obj.title }}</h1>
+    <div class="article_content|safe">
+    {{ article_obj.content }}
+    </div>
+{% endblock %}
+```
+
+后端
+
+```python
+def article_detail(request, username, article_id):
+    user_obj=models.UserInfo.objects.filter(username=username).first()
+    blog=user_obj.blog
+    # 先获取文章对象
+    article_obj = models.Article.objects.filter(pk=article_id,blog__userinfo__username=username).first()
+    if not article_obj:
+        return render(request,'error.html')
+    return  render(request,'article_detail.html',locals())
+
+```
+
+
+
+#### **侧边栏inclusion_tag制作**
+
+```python
 #侧边栏的渲染需要传入数据，才能渲染，并且该侧边栏再很多个页面都需要使用
 	1.那个地方用，就考呗代码
     2.将侧边栏制作成inclusion_tag
@@ -1297,7 +2001,7 @@ def site(request, username, **kwargs):
     	2.该文件夹下创建任意名字的py文件
     	3.再该py文件内先固定书写两行代码
     		from django import template
-    		register=template.Labrary()
+    		register=template.Library()
     		#自定义过滤器
     		#定义标签
     		#定义inclusion_tag
@@ -1305,12 +2009,12 @@ def site(request, username, **kwargs):
     
 ```
 
-**inclusion_tag**
+
 
 ```python
 #mytag.py
 from django import template
-from App import models
+from app01 import models
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 
@@ -1338,9 +2042,55 @@ def left_menu(username):
     return locals()
 ```
 
+**letf_menu.html**
+
+> 把base.html中<div class="col-md-3">里的代码剪切走，复制到left_menu.html中即可
+
 ```html
-{% load mytag %}
- {% left_menu username %}
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">文章分类</h3>
+    </div>
+    <div class="panel-body">
+        {% for category in category_list %}
+            <p><a href="/{{ username }}/category/{{ category.2 }}">{{ category.0 }}({{ category.1 }})</a></p>
+        {% endfor %}
+    </div>
+</div>
+<div class="panel panel-danger">
+    <div class="panel-heading">
+        <h3 class="panel-title">文章标签</h3>
+    </div>
+    <div class="panel-body">
+        {% for tag in tag_list %}
+            <p><a href="/{{ username }}/tag/{{ tag.2 }}">{{ tag.0 }}({{ tag.1 }})</a></p>
+        {% endfor %}
+    </div>
+</div>
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <h3 class="panel-title">日期归档</h3>
+    </div>
+    <div class="panel-body">
+        {% for date in date_list %}
+            <p><a href="/{{ username }}/archive/{{ date.0|date:'Y-m' }}">{{ date.0|date:'Y年m月' }}({{ date.1 }})</a>
+            </p>
+        {% endfor %}
+
+    </div>
+</div>
+```
+
+**base.html**
+
+```html
+ <div class="col-md-3">
+      {# 侧边栏区域#}
+     
+     {% load mytag %}
+    {% left_menu username %}
+     
+        </div>
 ```
 
 **后端**
@@ -1360,7 +2110,7 @@ def article_detail(request, username, article_id):
     return render(request, 'article_detail.html', locals())
 ```
 
-#### 8、文章点赞点踩
+#### 文章点赞点踩
 
 ```python
 """
@@ -1432,7 +2182,76 @@ def article_detail(request, username, article_id):
 
 **前端**
 
+在base.html中划分css和js区域
+
 ```html
+{% block css %}
+
+{% endblock %}
+
+
+{% block js %}
+
+{% endblock %}
+```
+
+
+
+```html
+
+
+
+<!------article_detail.html------->
+
+{% extends 'base.html' %}
+{% block css %}
+    <style>
+        #div_digg {
+            float: right;
+            margin-bottom: 10px;
+            margin-right: 30px;
+            font-size: 12px;
+            width: 125px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .diggit {
+            float: left;
+            width: 46px;
+            height: 52px;
+            background: url('/static/imgs/upup.gif') no-repeat;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 2px;
+            padding-top: 5px;
+        }
+
+        .buryit {
+            float: right;
+            margin-left: 20px;
+            width: 46px;
+            height: 52px;
+            background: url('/static/imgs/downdown.gif') no-repeat;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 2px;
+            padding-top: 5px;
+        }
+
+
+        .clear {
+            clear: both;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+<h1>{{ article_obj.title }}</h1>
+<div class="article_content">
+        {{ article_obj.content|safe }}
+</div>
 {#    点赞点踩图标样式开始#}
 <div class="clearfix">
     <div id="div_digg">
@@ -1448,6 +2267,7 @@ def article_detail(request, username, article_id):
     </div>
 </div>
 {#    点赞点踩图标样式结束#}
+{% endblock %}
 ```
 
 ```js
@@ -1533,7 +2353,7 @@ def up_or_down(request):
         return JsonResponse(back_dic)
 ```
 
-#### 9、文章评论
+#### 文章评论
 
 ```python
 #根评论
@@ -1747,7 +2567,7 @@ def comment(request):
 
 ```
 
-### 7、后台管理
+### 9、后台管理
 
 **前端**
 
@@ -1893,7 +2713,7 @@ def backend(request):
     return render(request, 'backend/backend.html', locals())
 ```
 
-### 8、文章增查
+### 10、文章增查
 
 **前端**
 

@@ -14,9 +14,31 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from app01 import views
+# 暴露后端指定文件夹资源
+# 在暴露资源的时候，一定要明确该资源是否可以暴露
+from django.views.static import serve
+from BBS import settings  # 项目下的settings.py文件
+
 urlpatterns = [
+    # 固定代码,开设后端指定资源
+    re_path(r'media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}),
     path('admin/', admin.site.urls),
-    path('register/',views.register,name='register')
+    path('register/', views.register, name='register'),
+    path('login/', views.login, name='login'),
+    # 图片验证码相关
+    path('get_code/', views.get_code, name='code'),
+    # 首页
+    path('home/', views.home, name='home'),
+    # 修改密码
+    path('set_password/', views.set_password, name='set_password'),
+    # 退出登录
+    path('logout/', views.logout, name='logout'),
+    # 个人站点页面搭建
+    re_path(r'^(?P<username>\w+)/$', views.site, name='site'),
+    # 侧边栏筛选功能
+    re_path(r'^(?P<username>\w+)/(?P<condition>category|tag|archive)/(?P<param>.*)/', views.site),
+    # 文章详情页
+    re_path(r'^(?P<username>\w+)/article/(?P<article_id>\d+)/', views.article_detail),
 ]
