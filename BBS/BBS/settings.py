@@ -47,7 +47,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+# X_FRAME_OPTIONS = 'SAMEORIGIN'
 ROOT_URLCONF = 'BBS.urls'
 
 TEMPLATES = [
@@ -128,4 +128,4 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'app01.UserInfo'
 LOGIN_URL = '/login/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')#文件名随意
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 文件名随意

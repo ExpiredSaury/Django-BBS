@@ -22,6 +22,18 @@ from django.views.static import serve
 from BBS import settings  # 项目下的settings.py文件
 
 urlpatterns = [
+    # 点赞点踩
+    path('up_or_down/', views.up_or_down),
+    # 评论
+    path('comment/', views.comment),
+    # 后台管理
+    path('backend/', views.backend),
+    #添加文章
+    path('add/article/',views.add_article),
+    #编辑器上传图片接口
+    path('upload_image/',views.upload_image),
+    #修改用户头像
+    path('set/avatar/',views.set_avatar),
     # 固定代码,开设后端指定资源
     re_path(r'media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}),
     path('admin/', admin.site.urls),

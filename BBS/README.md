@@ -1899,7 +1899,7 @@ def site(request, username, **kwargs):
 #先验证url是否会被顶替
 
 #文章详情页和个人站点基本一致，所以用模板的继承
-创建一个base.html,复制site.html的代码，在  <div class="col-md-9">这里划分区域，
+创建一个base.html,复制site.html的代码，粘贴到base.html中，在  <div class="col-md-9">这里划分区域，
      <div class="col-md-9">
             <!--文章数据展示区域-->
             {% block content %}
@@ -1911,7 +1911,7 @@ def site(request, username, **kwargs):
 
 
 #site.html
-{% extends 'base.html' %}
+{% extends 'backend.html' %}
 
 {% block content %}
     <ul class="media-list">
@@ -2122,6 +2122,7 @@ def article_detail(request, username, article_id):
 	1.拷贝前端点赞点踩图标，html代码
 	2.css样式也得拷
 		由于有图片防盗链，所以将图片直接下载到本地
+		
 如何区分用户是点赞了还是点踩了
 	1.给标签各自绑定一个事件
 		两个标签对应的 代码基本一致，仅仅是 是否点赞点踩这一个参数不一致
@@ -2199,8 +2200,6 @@ def article_detail(request, username, article_id):
 
 ```html
 
-
-
 <!------article_detail.html------->
 
 {% extends 'base.html' %}
@@ -2252,6 +2251,7 @@ def article_detail(request, username, article_id):
 <div class="article_content">
         {{ article_obj.content|safe }}
 </div>
+
 {#    点赞点踩图标样式开始#}
 <div class="clearfix">
     <div id="div_digg">
@@ -2290,7 +2290,7 @@ $('.action').click(function () {
 
                 //将前端的数字加1
                 let oldNum = $div.children().text();//文本是字符类型
-                {#$btn.children().text(oldNum + 1 ) //字符串拼接#}
+                {#$div.children().text(oldNum + 1 ) //字符串拼接#}
                 $div.children().text(Number(oldNum) + 1) //字符串拼接
 
             } else {
@@ -2305,6 +2305,8 @@ $('.action').click(function () {
 **后端**
 
 ```python
+path('up_or_down/',views.up_or_down),
+
 def up_or_down(request):
     """
     1.校验用户是否登录
@@ -2426,6 +2428,7 @@ def up_or_down(request):
 **前端**
 
 ```html
+<!----article_detail.html---->
 {#    {{ 评论楼渲染开始 }}#}
 <div>
     <ul class="list-group">
@@ -2474,8 +2477,8 @@ def up_or_down(request):
 ```
 
 ```js
-        //设置一个全局的parent_id
-        let parentId = null
+//设置一个全局的parent_id
+let parentId = null
 //用户点击评论按钮，发送ajax请求，
 $('#id_submit').on('click', function () {
     //获取用户评论内容
@@ -2507,7 +2510,7 @@ $('#id_submit').on('click', function () {
                 let userName = '{{ request.user.username }}';
                 let temp = `
                 <li class="list-group-item">
-                    <span>${username}</span>
+                    <span>${userName}</span>
                     <span><a href="" class="pull-right">回复</a></span>
                     <div>
                        ${conTent}
@@ -2532,7 +2535,7 @@ $('.replay').click(function () {
     //获取用户名，
     let commentUsername = $(this).attr('username');
     //用户主键值 直接修改全局的变量名
-    let parentId = $(this).attr('comment_id');
+    parentId = $(this).attr('comment_id');
     //拼接信息塞给评论框
     $('#id_comment').val('@' + commentUsername + '\n').focus()
 })
@@ -2546,6 +2549,7 @@ path('comment/',views.comment),
 ```
 
 ```python
+from django.db import  transaction
 def comment(request):
     if request.is_ajax():
         back_dic = {'code': 1000, 'msg': ''}
@@ -2569,17 +2573,140 @@ def comment(request):
 
 ### 9、后台管理
 
+![image-20230112150743918](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/image-20230112150743918.png)
+
 **前端**
 
-
+导航条
 
 ```html
-<!---backend/base.html--->
+<!----backend/base.html----->
 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load static %}
+    <!---<script src="../jQuery-3.6.0-min.js"></script>--->
+    <script src="{% static 'js/jQuery-3.6.0-min.js' %}"></script>
+    <link href="{% static 'bootstrap-3.4.1-dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <script src="{% static 'bootstrap-3.4.1-dist/js/bootstrap.min.js' %}"></script>
+</head>
+<body>
+{#导航条#}
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">BBS</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">{{ request.user.blog.site_title }}</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">博客 <span class="sr-only">(current)</span></a></li>
+                <li><a href="#">文章</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">更多 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">One more separated link</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <form class="navbar-form navbar-left">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                {% if request.user.is_authenticated %}
+                    <li><a href="#">{{ request.user.username }}</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                           aria-expanded="false">更多 <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" data-toggle="modal"
+                                   data-target=".bs-example-modal-lg">修改密码</a></li>
+                            <li><a href="#">修改头像</a></li>
+                            <li><a href="#">后台管理</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="{% url 'logout' %}">退出登录</a></li>
+                        </ul>
+                        <!-- 弹出框 -->
+                        <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog"
+                             aria-labelledby="myLargeModalLabel">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <h1 class="text-center">修改密码</h1>
+                                    <div class="row">
+                                        <div class="col-md-8 col-md-offset-2">
+                                            <div class="form-group">
+                                                <label for="">用户名</label>
+                                                <input type="text" class="form-control" disabled
+                                                       value="{{ request.user.username }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="">原密码</label>
+                                                <input type="text" class="form-control" id="id_old_password">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="">新密码</label>
+                                                <input type="text" class="form-control" id="id_new_password">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="">确认密码</label>
+                                                <input type="text" class="form-control" id="id_confirm_password">
+                                            </div>
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">取消
+                                            </button>
+                                            <button class="btn btn-primary" id="id_edit">修改</button>
+                                            <span style="color: red" id="id_error"></span>
+                                            <br>
+                                            <br>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'register' %}">注册</a></li>
+                    <li><a href="{% url 'login' %}">登录</a></li>
+                {% endif %}
+
+
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+</body>
+</html>
+```
+
+左右29布局
+
+```html
+<!-----backend/base.html---->
+{#左右布局#}
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-2">
-
             <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                 <div class="panel panel-default">
                     <div class="panel-heading" role="tab" id="headingOne">
@@ -2616,53 +2743,51 @@ def comment(request):
                     </div>
                 </div>
             </div>
+
         </div>
         <div class="col-md-10">
+          <div>
 
-            <div>
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab"
+                                                                  data-toggle="tab">文章</a></li>
+                        <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">随笔</a>
+                        </li>
+                        <li role="presentation"><a href="#messages" aria-controls="messages" role="tab"
+                                                   data-toggle="tab">草稿</a></li>
+                        <li role="presentation"><a href="#file" aria-controls="file" role="tab"
+                                                   data-toggle="tab">文件</a></li>
+                        <li role="presentation"><a href="#settings" aria-controls="settings" role="tab"
+                                                   data-toggle="tab">设置</a></li>
+                    </ul>
 
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs" role="tablist">
-                    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab"
-                                                              data-toggle="tab">文章</a></li>
-                    <li role="presentation"><a href="#profile" aria-controls="profile" role="tab"
-                                               data-toggle="tab">随笔</a>
-                    </li>
-                    <li role="presentation"><a href="#messages" aria-controls="messages" role="tab"
-                                               data-toggle="tab">草稿</a>
-                    <li role="presentation"><a href="#file" aria-controls="file" role="tab"
-                                               data-toggle="tab">文件</a>
-
-                    </li>
-                    <li role="presentation"><a href="#settings" aria-controls="settings" role="tab"
-                                               data-toggle="tab">设置</a>
-                    </li>
-                </ul>
-
-                <!-- Tab panes -->
-                <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane active" id="home">
-                        {% block article %}
-
-                        {% endblock %}
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="home">
+                            {% block article %}
+                            
+                            {% endblock %}
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="profile">随笔页面</div>
+                        <div role="tabpanel" class="tab-pane" id="messages">草稿页面</div>
+                        <div role="tabpanel" class="tab-pane" id="file">文件页面</div>
+                        <div role="tabpanel" class="tab-pane" id="settings">设置页面</div>
                     </div>
-                    <div role="tabpanel" class="tab-pane" id="profile">随笔页面</div>
-                    <div role="tabpanel" class="tab-pane" id="messages">草稿页面</div>
-                    <div role="tabpanel" class="tab-pane" id="file">文件页面</div>
-                    <div role="tabpanel" class="tab-pane" id="settings">设置页面</div>
+
                 </div>
-
-            </div>
-
 
         </div>
     </div>
 </div>
-</body>
-</html>
 ```
 
+
+
+
+
 ```html
+<!-----backend/backend.html----->
 {% extends 'backend/base.html' %}
 
 {% block article %}
@@ -2680,7 +2805,7 @@ def comment(request):
         <tbody>
         {% for article in page_queryset %}
             <tr>
-                <td><a href="/{{ request.user.username }}/article/{{ article.pk }}">{{ article.title }}</a></td>
+                <td><a href="/{{ request.user.username }}/article/{{ article.pk }}/">{{ article.title }}</a></td>
                 <td>{{ article.comment_num }}</td>
                 <td>{{ article.up_num }}</td>
                 <td><a href="">编辑</a></td>
@@ -2693,7 +2818,126 @@ def comment(request):
 {% endblock %}
 ```
 
+在base.html和backend/base.html和home.html中配置url跳转
+
+```html
+   <li><a href="/backend/">后台管理</a></li>
+```
+
+
+
 **后端**
+
+自定义分页器代码
+
+```python
+# -*- coding: UTF-8 -*- 
+
+#utils/mypage.py
+
+
+class Pagination(object):
+    def __init__(self, current_page, all_count, per_page_num=2, pager_count=11):
+        """
+        封装分页相关数据
+        :param current_page: 当前页
+        :param all_count:    数据库中的数据总条数
+        :param per_page_num: 每页显示的数据条数
+        :param pager_count:  最多显示的页码个数
+        """
+        try:
+            current_page = int(current_page)
+        except Exception as e:
+            current_page = 1
+
+        if current_page < 1:
+            current_page = 1
+
+        self.current_page = current_page
+
+        self.all_count = all_count
+        self.per_page_num = per_page_num
+
+        # 总页码
+        all_pager, tmp = divmod(all_count, per_page_num)
+        if tmp:
+            all_pager += 1
+        self.all_pager = all_pager
+
+        self.pager_count = pager_count
+        self.pager_count_half = int((pager_count - 1) / 2)
+
+    @property
+    def start(self):
+        return (self.current_page - 1) * self.per_page_num
+
+    @property
+    def end(self):
+        return self.current_page * self.per_page_num
+
+    def page_html(self):
+        # 如果总页码 < 11个：
+        if self.all_pager <= self.pager_count:
+            pager_start = 1
+            pager_end = self.all_pager + 1
+        # 总页码  > 11
+        else:
+            # 当前页如果<=页面上最多显示11/2个页码
+            if self.current_page <= self.pager_count_half:
+                pager_start = 1
+                pager_end = self.pager_count + 1
+
+            # 当前页大于5
+            else:
+                # 页码翻到最后
+                if (self.current_page + self.pager_count_half) > self.all_pager:
+                    pager_end = self.all_pager + 1
+                    pager_start = self.all_pager - self.pager_count + 1
+                else:
+                    pager_start = self.current_page - self.pager_count_half
+                    pager_end = self.current_page + self.pager_count_half + 1
+
+        page_html_list = []
+        # 添加前面的nav和ul标签
+        page_html_list.append('''
+                    <nav aria-label='Page navigation>'
+                    <ul class='pagination'>
+                ''')
+        first_page = '<li><a href="?page=%s">首页</a></li>' % (1)
+        page_html_list.append(first_page)
+
+        if self.current_page <= 1:
+            prev_page = '<li class="disabled"><a href="#">上一页</a></li>'
+        else:
+            prev_page = '<li><a href="?page=%s">上一页</a></li>' % (self.current_page - 1,)
+
+        page_html_list.append(prev_page)
+
+        for i in range(pager_start, pager_end):
+            if i == self.current_page:
+                temp = '<li class="active"><a href="?page=%s">%s</a></li>' % (i, i,)
+            else:
+                temp = '<li><a href="?page=%s">%s</a></li>' % (i, i,)
+            page_html_list.append(temp)
+
+        if self.current_page >= self.all_pager:
+            next_page = '<li class="disabled"><a href="#">下一页</a></li>'
+        else:
+            next_page = '<li><a href="?page=%s">下一页</a></li>' % (self.current_page + 1,)
+        page_html_list.append(next_page)
+
+        last_page = '<li><a href="?page=%s">尾页</a></li>' % (self.all_pager,)
+        page_html_list.append(last_page)
+        # 尾部添加标签
+        page_html_list.append('''
+                                           </nav>
+                                           </ul>
+                                       ''')
+        return ''.join(page_html_list)
+
+```
+
+
 
 ```python
 #后台管理
@@ -2708,14 +2952,24 @@ from utils.mypage import Pagination
 @login_required
 def backend(request):
     article_list = models.Article.objects.filter(blog=request.user.blog)
-    page_obj = Pagination(current_page=request.GET.get('page', 1), all_count=article_list.count())
+    page_obj = Pagination(current_page=request.GET.get('page', 1), all_count=article_list.count(),per_page_num=5)
     page_queryset=article_list[page_obj.start:page_obj.end]
     return render(request, 'backend/backend.html', locals())
 ```
 
-### 10、文章增查
+#### 文章添加
 
 **前端**
+
+在backend/base.html中给添加文章添加跳转的url
+
+```html
+ <div class="panel-body">
+    <a href="/add/article/">添加文章</a>
+</div>
+```
+
+
 
 ```html
 {% extends 'backend/base.html' %}
@@ -2848,7 +3102,7 @@ def add_article(request):
     {% block js %}
         {% load static %}
         <script charset="utf-8" src="{% static 'kindeditor-master/kindeditor-all-min.js' %}"></script>
-        {#        <script charset="utf-8" src="/editor/lang/zh-CN.js"></script>#}
+       
         <script>
             KindEditor.ready(function (K) {
                 window.editor = K.create('#id_content', {
@@ -2872,13 +3126,14 @@ def add_article(request):
 {% endblock %}
 ```
 
-### 10、处理XSS攻击以及文章摘要的处理
+#### 处理XSS攻击以及文章摘要的处理
 
 ```pytohn
-针对用户直接编写的html代码的网址
-针对用户直接书写script标签，需要处理
-	1.注释标签内部的内容
-	2.直接将script删除
+xss攻击
+    针对用户直接编写的html代码的网址
+    针对用户直接书写script标签，需要处理
+        1.注释标签内部的内容
+        2.直接将script删除
 如何解决
 	针对1 后端通过正则表达式筛选
 	针对2 首相需要确定及获取script标签
@@ -2891,22 +3146,42 @@ def add_article(request):
 
 ```python
 """bs4模块使用"""
-soup = BeautifulSoup(content, 'html.parser')
-# 获取所有的标签
-tags = soup.find_all()
-for tag in tags:
-    # print(tag.name)
-    if tag.name == 'script':
-        # 删除标签
-        tag.decompose()
-# 文章简介
-# 1.先简单暴力的直接切取content  150个字符
-# desc = content[0:150]
-# 2.截取文本150个
-desc = soup.text[0:150]
+# 添加文章
+@login_required
+def add_article(request):
+    if request.method == 'POST':
+        ....
+        content = request.POST.get('content')
+        ....
+
+        soup = BeautifulSoup(content, 'html.parser')
+        # 获取所有的标签
+        tags = soup.find_all()
+        for tag in tags:
+            # print(tag.name)
+            if tag.name == 'script':
+                # 删除标签
+                tag.decompose()
+        # 文章简介
+        # 1.先简单暴力的直接切取content  150个字符
+        # desc = content[0:150]
+        # 2.截取文本150个
+        desc = soup.text[0:150]
+
+        article_obj = models.Article.objects.create(
+            title=title,
+            content=str(soup),
+            desc=desc,
+            category_id=category_id,
+            blog=request.user.blog,
+        )
+        ....
+        ....
 ```
 
-### 11、编辑器上传图片
+#### 编辑器上传图片
+
+![image-20230112162530854](https://gitee.com/zh_sng/cartographic-bed/raw/master/img/image-20230112162530854.png)
 
 ```python
 """
@@ -2915,9 +3190,140 @@ desc = soup.text[0:150]
 """
 ```
 
-### 12、修改用户头像
+```html
+<!---backend/add_article.html--->
+{% block js %}
+    {% load static %}
+    <script charset="utf-8" src="{% static 'kindeditor/kindeditor-all-min.js' %}"></script>
+    <script>
+        KindEditor.ready(function (K) {
+            window.editor = K.create('#id_content', {
+                width: '100%',
+                height: '600px',
+                items:[
+                    ....
+                ],
+                resizeType:1,
++               uploadJson : '/upload_image/', //上传图片的后端提交路径
++               extraFileUploadParams : {
+                        'csrfmiddlewaretoken':'{{ csrf_token }}'
+                },
 
-### 13、总结
+            });
+        });
+    </script>
+{% endblock %}
+```
+
+
+
+```python
+path('upload_image/',views.upload_image),
+
+# 编辑器上传图片
+from BBS import settings
+
+
+def upload_image(request):
+    if request.method == 'POST':
+        back_dic = {'erro': 0}
+        # 获取用户上传的图片对象
+        file_obj = request.FILES.get('imgFile')
+        # 手动拼接存储文件路径
+        file_dir = os.path.join(settings.BASE_DIR, 'media', 'article_img')
+        # 优化操作，先判断当前文件夹是否存在，不存在则创建
+        if not os.path.isdir(file_dir):
+            os.mkdir(file_dir)
+        # 拼接图片完整路径
+        file_path = os.path.join(file_dir, file_obj.name)
+        with open(file_path, 'wb') as f:
+            for line in file_obj:
+                f.write(line)
+        back_dic['url'] = '/media/article_img/%s' % file_obj.name
+    return JsonResponse(back_dic)
+
+```
+
+
+
+### 10、修改用户头像
+
+在base.html和backend/base.html和home.html中为修改头像配置url跳转
+
+```html
+ <li><a href="/set/avatar/">修改头像</a></li>
+```
+
+```html
+<!--set_avatar.html---->
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <h3 class="text-center">修改头像</h3>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <p>
+            原头像
+            <img src="/media/avatar/{{ request.user.avatar }}" alt="">
+        </p>
+        <p>
+
+            <label for="myfile">新头像
+                <img src="{% static 'imgs/default.png' %}" id="myimg" alt="" width='80px'
+                     style="margin-top: 20px;margin-left: 10px">
+            </label>
+            <input type="file" id="myfile" name="avatar" style="display: none">
+        </p>
+        <input type="submit" class="btn btn-info">
+    </form>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+        $('#myfile').change(function () {
+            //文件阅读器对象
+            //1.先生成一个文件对象
+            let myFileReaderObj = new FileReader();
+            //2. 获取用户上传的头像文件
+            let fileObj = $(this)[0].files[0];
+            //3. 将文件对象交给阅读器对象读取
+            myFileReaderObj.readAsDataURL(fileObj)  //异步操作 IO操作
+            //4.利用文件阅读器将文件展示到前端页面  修改src属性
+            //等待文件阅读器加载完毕后再执行
+            myFileReaderObj.onload = function () {
+                $('#myimg').attr('src', myFileReaderObj.result)
+            }
+        })
+    </script>
+{% endblock %}
+```
+
+
+
+```python
+#修改用户头像
+path('set/avatar/',views.set_avatar),
+
+# 修改头像
+@login_required
+def set_avatar(request):
+    if request.method == 'POST':
+        file_obj = request.FILES.get('avatar')
+        # models.UserInfo.objects.filter(pk=request.user.pk).update(avatar=file_obj)
+        user_obj=request.user
+        user_obj.avatar=file_obj
+        user_obj.save()
+        return redirect('/home/')
+    blog = request.user.blog
+    username = request.user.username
+
+    return render(request, 'set_avatar.html', locals())
+
+```
+
+### 11、总结
 
 ```python
 #主要功能总结:
