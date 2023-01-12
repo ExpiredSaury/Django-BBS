@@ -38,7 +38,7 @@ urlpatterns = [
     re_path(r'media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT}),
     path('admin/', admin.site.urls),
     path('register/', views.register, name='register'),
-    path('login/', views.login, name='login'),
+    path('', views.login, name='login'),
     # 图片验证码相关
     path('get_code/', views.get_code, name='code'),
     # 首页
